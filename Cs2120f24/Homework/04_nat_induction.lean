@@ -5,7 +5,7 @@ Can we easily imagine a function that computes
 value of functions, such as factorial n, for *any*
 natural number argument, n, from 0 all the way up.
 As such a function consumes a natural number value
-and returns another natural number value, it's type
+and returns another natural  number value, it's type
 must be *Nat → Nat*. But can we compute the value of
 the function for *any* n?
 -/
