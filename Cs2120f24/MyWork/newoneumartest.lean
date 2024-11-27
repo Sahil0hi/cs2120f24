@@ -1,156 +1,348 @@
-import «Cs2120f24».Lectures.«02_prop_logic».formal.models_counterexamples
+namespace cs2120f24.constructiveLogic
 
-namespace cs2120f24
+/-! HOMEWORK #6. COUNTS FOR TWO ASSIGNMENTS.
 
-/-! HOMEWORK #2: Models and Counterexamples
-
-An interpretation, i, of an expression, e, is said to be a *model* of
-e if e evaluates to true under i: that is, *evalPLExor e i = true*. On
-the other hand, if e is false for i, then is i is  a *counterexample*
-for e.
-
-It is incredibly useful to be able to find models and counterexamples
-of propositions/expressions in propositional logic. It is already clear
-to everyone here that a given expression could be true under zero, some,
-or all of its possible interpretations.
-
-We already have functions that decide whether given expressions are valid,
-satisfiable, or unsatisfiable; and we know those work by iterating over all
-2^n possible interpretations for an expression with n distinct variables,
-evaluating the expression for each, and then combining the answers in the
-right way: reducing the results using ∧ to see if *all* results are true
-(validity checking); using ∨ to see if *any* are true (sat checking); and
-∨ checking to see if they're all false (unsat checking).
-
-Insight: Instead of collecting Bool values, computed by (evalPLExpr e i)
-we could just collect the interpretations thenselves that make e true. An
-interpretation in the resulting list would be a model, while one in a list
-for ¬e, would be a model of ¬e and thus a counterexample for e (a list of
-variable/value bindings under which e is false, which is what we want in a
-counterexample).
-
-It shouldn't be hard to adapt what we already have to produce model and
-counterexample finders. To make things even easier, all we really need
-to provide is one function that takes an expression argument and returns
-a list of all its models. We can then implement model and counterexample
-finders using that function as a tool.
-
-And so, yes, that's what we've done for you. You can find the names and
-types (as well as the implementation definitions) of these functions in
-the file, models_counterexamples.lean.
-
-In engineering practice, model and counterexample finders for large and
-complex propositional logic expressions are incredibly important. Now you
-know what they do, even if it'd take another course to see how they do it
-*efficiently* for kinds of problems that often arise in practice.
-
-To be sure you're good using the tools we've provided please copy this
-file to MyWork, the complete the homework following the instructions
-below.
+This is an important homework. It gives you an
+opportunity to work out many of the kinks in your
+understanding of predicate logic and deductive
+proofs in type theory. With P, Q, and R accepted
+as propositions, you are to give proofs of all of
+the identities from Library/propLogic/identities,
+which I've rewritten in Lean for you. There's one
+of these axioms that has no constructive proof (in
+just one direction). You can just identify it.
 -/
 
 
--- Here we declare names for two propositional variable *expressions*
-def isRaining := {⟨0⟩}
-def isSprinkling := {⟨1⟩}
+-- Suppse P, Q, and R are arbitrary propositions
+axiom P : Prop
+axiom Q : Prop
+axiom R : Prop
 
--- Now we give standard names to three logical fallacies we've already seen
-def affirm_disjunct := (isRaining ∨ isSprinkling) ⇒ isRaining ⇒ ¬isSprinkling
-def deny_antecedent := (isSprinkling ⇒ isRaining) ⇒ isSprinkling ⇒ ¬isRaining
-def affirm_consequent := (isSprinkling ⇒ isRaining) ⇒ isRaining ⇒ isSprinkling
-
-
-/- #1: [25 points]. Using our counterexample finder
-
-findCounterexample(affirm_disjunct)
-
-Replace _ with the expression to get the list of counterexamples to affirm_disjunct
--/
-def cxs : List BoolInterp := findCounterexamples (affirm_disjunct)
-
-
--- This "code" should display the resulting interpretations lists of 0/1 strings
--- It'll work when you fill in an answer above.
-#eval! interpStringsFromInterps cxs 2
-
-
-
-/- #2: [25 points]. Translating counterexamples back into English.
-
-For each counterexample found, first translate it into English. Replace
-the Boolean values indexed by position in the counterexample print-outs
-with  meaningful natural language variables names and truth values, and
-briefly explain why the proposition is false under that interpretation.
-
-Example: variables are happy, blue; expression is happy ∧ blue; counterexample
-is ["0","1"]; and explanation: conjunction requires that both conjuncts (happy,
-and blue) be true for the expression to be true, but here is an interpretation
-in which that's just not the case: not happy and blue.
+/-!
+Give proofs in Lean that each of the following identities
+is valid. We already know they're classically valid as we
+validated their propositional logic analogics semantically
+using our model / validity checker. To get you started with
+a concrete example, we prove the first one for you and give
+a little English explanation after. You should od the same
+for each proposition you prove.
 -/
 
-/-
-You answers here:
-Variables are isRaining, isSprinkling. expression is Raining ∨ Sprinkling. counterexample is
-["1","1"]; and explanation: It is both Raining and Sprinkling. They are both true. That satisfies the or.
-Next, if it is raining, it is not sprinkling. This is false as both are true. And interpretation that is a
-counterexample: True, True.
 
+def andIdempotent   : P ↔ (P ∧ P) :=
+Iff.intro
+  -- forward direction: P → P ∧ P
+  -- assume p : P, show P ∧ P
+  (fun (p : P) => (And.intro p p))
+  -- backwards direction: P ∧ P → P
+  (fun (h : And P P) => (h.right))
+
+/-!
+In English: To prove P ↔ P ∧ P it will suffice
+by iff intro, to have proofs, (fw : P → (P ∧ P))
+and (bw : (P ∧ P) → P). Each is proved by giving
+an argument to result proof construction.
+
+Forward direction:
+
+To prove P → P ∧ P, we show (by defining one) that
+there is a function that turns any proof of P into
+a proof of P ∧ P. There just one answer: ⟨ p, p ⟩.
+
+Backward direction:
+
+To prove P ∧ P → P, we assume a proof, (h : P ∧ P),
+and are to show P. Either h.left or h.right will do.
+
+Summary: Whether in formal logic or English language,
+you have to know that to prove any equivance, P ↔ Q,
+it is both sufficient and necessary that you have or
+obtain proofs (fw : P → Q) and (bw: Q → P). With these
+values, the term, (Iff.intro fw bw), is a proof of the
+equivalence.
 -/
 
-/- #3 [50 points].
+-- What we are to prove is that ∨ is idemponent
+-- That is, that for any P, P ↔ (P ∨ P).
+def orIdempotent    : P ↔ (P ∨ P) :=
+-- Proof: by application if iff.intro
+-- iff intro
+(
+  Iff.intro
+  -- Proof of P → P ∨ P
+  (fun (p : P) => Or.inl p)
+  -- Required proof of backward implication
+  (fun (h : P ∨ P) =>
+    (Or.elim
+      h
+      (fun p => p)
+      (fun p => p)
+    )
+  )
+)
 
-Do the same thing with each of the other two fallacies.
+def andCommutative  : (P ∧ Q) ↔ (Q ∧ P) :=
+Iff.intro
+--forwards
+  (fun (h : P ∧ Q) => And.intro h.right h.left)
+  --backwards
+  (fun (h : Q ∧ P) => And.intro h.right h.left)
 
-- get and display (via #eval! the a list of counterexamples
-- explain each counterexample in English
-- explain briefly why the result of evaluation under this interpretation is false
+def orCommutative   : (P ∨ Q) ↔ (Q ∨ P) :=
+Iff.intro
+--forwards
+  (fun (h : P ∨ Q) => Or.elim h (fun hp => Or.inr hp) (fun hq => Or.inl hq))
+  --backwards
+  (fun (h : Q ∨ P) => Or.elim h (fun hq => Or.inr hq) (fun hp => Or.inl hp))
+
+def identityAnd     : (P ∧ True) ↔ P :=
+Iff.intro
+--forwards
+  (fun (h : P ∧ True) => h.left)
+  --backwards
+  (fun (p : P) => And.intro p True.intro)
+
+def identityOr      : (P ∨ False) ↔ P :=
+Iff.intro
+  -- forwards
+  (fun (h : P ∨ False) =>
+    (Or.elim h
+      (fun (p : P) => p)
+      (fun (f : False) => False.elim f)
+    )
+  )
+  -- backwards
+  (fun (p : P) =>
+    (Or.inl p)
+  )
+
+def annhilateAnd    : (P ∧ False) ↔ False  :=
+Iff.intro
+--forwards
+  (fun (h : P ∧ False) => h.right)
+  --backwards
+  (fun (f : False) => False.elim f)
+
+def annhilateOr     : (P ∨ True) ↔ True :=
+Iff.intro
+--forwards
+  (fun (_ : P ∨ True) => True.intro)
+  --backwards
+  (fun (_ : True) => Or.inr True.intro)
+
+def orAssociative   : ((P ∨ Q) ∨ R) ↔ (P ∨ (Q ∨ R)) :=
+Iff.intro
+--forwards
+  (fun (h : (P ∨ Q) ∨ R) =>
+    Or.elim h
+      (fun pq : P ∨ Q => Or.elim pq Or.inl (fun q => Or.inr (Or.inl q)))
+      (fun r : R => Or.inr (Or.inr r)))
+      --backwards
+  (fun (h : P ∨ (Q ∨ R)) =>
+    Or.elim h
+      (fun p : P => Or.inl (Or.inl p))
+      (fun qr : Q ∨ R => Or.elim qr (fun q : Q => Or.inl (Or.inr q)) (fun r : R => Or.inr r)))
+
+def andAssociative  : ((P ∧ Q) ∧ R) ↔ (P ∧ (Q ∧ R)) :=
+Iff.intro
+--forwards
+  (fun (h : (P ∧ Q) ∧ R) =>
+    And.intro h.left.left (And.intro h.left.right h.right))
+    --backwards
+  (fun (h : P ∧ (Q ∧ R)) =>
+    And.intro (And.intro h.left h.right.left) h.right.right)
+
+def distribAndOr    : (P ∧ (Q ∨ R)) ↔ ((P ∧ Q) ∨ (P ∧ R)) :=
+Iff.intro
+--forwards
+  (fun (h : P ∧ (Q ∨ R)) =>
+    Or.elim h.right
+      (fun q : Q => Or.inl (And.intro h.left q))
+      (fun r : R => Or.inr (And.intro h.left r)))
+      --backwards
+  (fun (h : (P ∧ Q) ∨ (P ∧ R)) =>
+    Or.elim h
+      (fun pq : P ∧ Q => And.intro pq.left (Or.inl pq.right))
+      (fun pr : P ∧ R => And.intro pr.left (Or.inr pr.right)))
+
+def distribOrAnd    : (P ∨ (Q ∧ R)) ↔ ((P ∨ Q) ∧ (P ∨ R)) :=
+Iff.intro
+--forward
+  (fun (h : P ∨ (Q ∧ R)) =>
+    Or.elim h
+      (fun p : P => And.intro (Or.inl p) (Or.inl p))
+      (fun qr : Q ∧ R => And.intro (Or.inr qr.left) (Or.inr qr.right)))
+      --backwards
+  (fun (h : (P ∨ Q) ∧ (P ∨ R)) =>
+    match h with
+    | ⟨Or.inl p, _⟩ => Or.inl p
+    | ⟨_, Or.inl p⟩ => Or.inl p
+    | ⟨Or.inr q, Or.inr r⟩ => Or.inr ⟨q, r⟩)
+
+def equivalence     : (P ↔ Q) ↔ ((P → Q) ∧ (Q → P)) :=
+Iff.intro
+--fowards
+  (fun (h : P ↔ Q) => ⟨h.mp, h.mpr⟩)
+  --backwards
+  (fun (h : (P → Q) ∧ (Q → P)) => Iff.intro h.1 h.2)
+
+def implication     : (P → Q) ↔ (¬P ∨ Q) :=
+Iff.intro
+--forward
+  (fun (h : P → Q) =>
+    (Or.inr _))
+    --backwards
+  (fun (h : (¬P ∨ Q)) =>
+    (fun (p : P) =>
+      Or.elim
+      h
+      (fun (k : ¬P) => False.elim (k p))
+      (fun q => q)
+    )
+  )
+
+
+def exportation     : ((P ∧ Q) → R) ↔ (P → Q → R) :=
+Iff.intro
+--forwards
+  (fun (h : (P ∧ Q) → R) =>
+    fun (p : P) =>
+      fun (q : Q) =>
+        h ⟨p, q⟩)
+        --backwards
+  (fun (h : P → Q → R) =>
+    fun (pq : P ∧ Q) =>
+      h pq.1 pq.2)
+
+def absurdity       : (P → Q) ∧ (P → ¬Q) → ¬P :=
+fun (h : (P → Q) ∧ (P → ¬Q)) =>
+  fun (p : P) =>
+    (h.2 p) (h.1 p)
+
+def distribNotAnd   : ¬(P ∧ Q) ↔ (¬P ∨ ¬Q) :=
+Iff.intro
+--forwards
+  (fun (h : ¬(P ∧ Q)) =>
+    Or.elim (Classical.em P)
+      (fun p : P =>
+        Or.elim (Classical.em Q)
+          (fun q : Q => False.elim (h ⟨p, q⟩))
+          (fun nq : ¬Q => Or.inr nq))
+      (fun np : ¬P => Or.inl np))
+      --backwards
+  (fun (h : ¬P ∨ ¬Q) =>
+    fun (pq : P ∧ Q) =>
+      Or.elim h
+        (fun np : ¬P => np pq.1)
+        (fun nq : ¬Q => nq pq.2))
+
+def distribNotOr    : ¬(P ∨ Q) ↔ (¬P ∧ ¬Q) :=
+Iff.intro
+--forwards
+  (fun (h : ¬(P ∨ Q)) =>
+    ⟨fun (p : P) => h (Or.inl p), fun (q : Q) => h (Or.inr q)⟩)
+    --backwards
+  (fun (h : ¬P ∧ ¬Q) =>
+    fun (pq : P ∨ Q) =>
+      Or.elim pq
+        (fun p : P => h.1 p)
+        (fun q : Q => h.2 q))
+
+
+/-!
+EXTRA CREDIT: apply the axiom of the excluded middle
+to give a classical proof of any propositions that you
+identified as having no constructive proof. The axiom
+is available as Classical.em (p : Prop) : p ∨ ¬p.
 -/
 
-/-
-Your answers here:
+#check Classical.em
+-- Classical.em (p : Prop) : p ∨ ¬p
 
-deny_antecedent results: ["1","1"]
-def deny_antecedent := (isSprinkling ⇒ isRaining) ⇒ isSprinkling ⇒ ¬isRaining
+/-!
+Given nothing but a proposition, excluded middle gives
+you a proof of A ∨ ¬A 'for free". By "free" we mean that
+you can have a proof of A ∨ ¬A without providing a proof
+of either A or of ¬A. We call such a proof of (A ∨ ¬A)
+non-constructive.
+-/
+def pfAorNA (A : Prop) : A ∨ ¬A := Classical.em A
 
-Variables are Raining, Sprinkling. expression is Sprinkling ⇒ Raining. Counterexample is
-["1","1"]; explanation: It is sprinkling, so it is also raining due to implies, and both are true.
-Then, if it is sprinkling, which it is, then it is not raining, which is false, because it is raining.
-You can have both sprinklers on and the rain. It is both sprinkling and raining, but according to the
-this fallacy, it cannot be both.
 
+/-!
+The next insight you want is that with a proof of A ∨ ¬A,
+you can do a case analysis on that disjunction. In one
+case, you'll have the assumption A is true (with a proof
+(a : A)). In the other case, you'll have the assumption
+that ¬A is true (with a proof (na : ¬A)). The other case
+assumes ¬A is true, with a proof, (na : ¬A).
 
-affirm_consequent results: ["1","0"]
-def affirm_consequent := (isSprinkling ⇒ isRaining) ⇒ isRaining ⇒ isSprinkling
+In other words, the axiom of the excluded middle forces
+every proposition to be either true or false, with no
+indeterminate "middle" state where you don't have a proof
+either way. (Recall that in the constructive logic of Lean
+you can construct a proof of A ∨ ¬A if and only if you have
+a proof one way or the other. Now we see why they call it
+the "law of the excluded middle." But really it's just an
+axiom.
 
-Variables are Raining, Sprinkling. expression is Sprinkling ⇒ Raining. Counterexample is
-["1","0"]; explanation: If it is sprinkling, then it is raining. This has no issues, as since sprinkling is false, we don't need to worry about
-the rain. Next, if it is raining (which it is), then it is sprinkling, which it is not. That is an error,
-so that is the counter example. It is raining but not sprinkling, which goes against the fallacy, so it is a counter example.
+Indeed, excluded middle is one of several non-constructive
+axioms that can be added to Lean simply by stating that they
+are axioms. Negation elimination, ¬¬A → A, also called proof
+by contradiction, is equivalent to excluded middle (can you
+prove it), so if you adopt one you get the other as well.
 
+Additional axioms that you might need to include in Lean
+for some purposes include the following:
+
+- functional extensionality (simplified), ∀ a, f a = g a → f = g
+- propositional extensionality, (P ↔ Q) ↔ P = Q
+- choice: Nonempty A → A
 -/
 
-def cxsb : List BoolInterp := findCounterexamples (deny_antecedent)
-#eval! interpStringsFromInterps cxsb 2
+#check funext
+#check propext
+#check Classical.choice
 
+/-!
+The first axiom let's you conclude (and have a proof) that two
+functions are equal if they return the same results on all of
+their inputs. The second let's you replace bi-implication with
+equality of propositions, and vice versal.
 
+The third? It requires an understanding that when you construct
+a proof of ∃ x, P x, E.g., (Exists.intro 4 (Ev 4)) the value you
+provided (here 4) is forgotten. You can never get a specific value
+back out of a proof of ∃. This fact mirrors the idea that all that
+a proof of an existential proposition tells you is that there is
+*some* value out there in the universe that satisifes the given
+predicate, but not what it is. What this axiom says is that if
+you can provide there's some "witness/value", then you can get
+an actual value. To prove some theorems in mathematics, you need
+this. The tradeoff is that Lean marks the value as non-computable,
+which means you can't actually compute anything with it.
 
-def cxsc : List BoolInterp := findCounterexamples (affirm_consequent)
-#eval! interpStringsFromInterps cxsc 2
+All you need to know for this class is that the axioms of the
+excluded middle, and equivalently negation elimination (thus also
+proof by contradiction), are not constructive and thus not in the
+axioms of the *constructive* logic of Lean. However, you can add
+them to the logic without making it inconsistent (introducing any
+contradictions) in cases where you want to "reason classically."
 
-
-
-/- #4 [unmarked].
-
-Finish your assigned reading. Don't just skim. Try hard to learn it.
-Relate it back to details of our specification of propositional logic. Go through, read,
-play with, and understand the material on syntax, variable and operator interpretations,
-truth_tables, properties of expressions, and models and counterexamples. Main.lean has
-examples of using most of the important functions in our specification of propositional
-logic. The code in the interpretations.lean file is most complex. I don't expect you to
-understand the implementations, but but you can still understand *what* the functions do
-based on comments. We're coming to the close of the unit on propositional logic. Take time
-now to nail down your understanding of propositional logic in all of the dimensions we've
-covered.
+So, finally, let's see in Lean what it actually looks like to use
+"em" (excluded middle). Remember: from a proposition, A, first use
+em to get a proof of A ∨ ¬A, then do case analysis on that proof,
+yielding on case where A is true and another case where it's false,
+and where there are no other possible states of affairs, e.g., not
+having a proof either way.
 -/
 
-namespace cs2120f24
+#check P                -- a proposition
+#check Classical.em P   -- a proof of P or ¬P
+
+-- And here's a partial proof showing exactly how to use em
+example : P → Q :=
+  match (Classical.em P) with
+  | Or.inl p =>  h p      -- P is true, with p a proof
+  | Or.inr np => have q : Q := h (Classical.byContradiction np)      -- P is false, with np a proof
