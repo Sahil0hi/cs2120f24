@@ -161,7 +161,7 @@ to start.
 
 example : ∅ ∈ 𝒫 t :=
 (
-  Set.empty_subset t
+  _
 )
 
 /-!
