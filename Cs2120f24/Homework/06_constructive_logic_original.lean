@@ -86,7 +86,7 @@ _
 def distribAndOr    : (P ∧ (Q ∨ R)) ↔ ((P ∧ Q) ∨ (P ∧ R)) :=
 _
 
-def distribOrAnd    : (P ∨ (Q ∧ R)) ↔ ((P ∨ Q) ∧ (P ∨ R)) :=
+def distribOrAnd    : (P ∨ (Q ∧ R)) ↔ ((P ∨ Q) ∧ (P ∨ R)) := 
 _
 
 def equivalence     : (P ↔ Q) ↔ ((P → Q) ∧ (Q → P)) :=
