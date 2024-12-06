@@ -45,3 +45,8 @@ import «Cs2120f24».Library.natArithmetic.semantics
 import «Cs2120f24».Library.propLogicWithArith.syntax
 import «Cs2120f24».Library.propLogicWithArith.domain
 import «Cs2120f24».Library.propLogicWithArith.semantics
+
+-- Set Theory
+import «Cs2120f24».Library.setTheory.«01_sets»
+import «Cs2120f24».Library.setTheory.«02_relations»
+import «Cs2120f24».Library.setTheory.«03_properties_of_relations»
