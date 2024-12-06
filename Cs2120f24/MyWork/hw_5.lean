@@ -1,4 +1,4 @@
-/-! # Homework #5: Propositions as Types
+                                                                                                                                                                                                                                                                                        /-! # Homework #5: Propositions as Types
 
 In the last two classes, you've learned that we can represent
 propositions as types, with any value of such a type, if there
